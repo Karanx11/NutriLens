@@ -11,6 +11,5 @@
 * 📊 Interactive health insights and charts
 * 📅 OCR-based manufacturing & expiry date extraction
 * ⚠️ Allergen and dietary warnings
-* 💡 Healthier alternative product recommendations
 
 **Tech Stack:** Flutter • Node.js • Express.js • MongoDB • OCR • AI APIs • Barcode Scanner
