@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routes/app_routes.dart';
-import 'features/splash/screens/splash_screen.dart';
 
 class NutriLensApp extends StatelessWidget {
   const NutriLensApp({super.key});
