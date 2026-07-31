@@ -13,3 +13,6 @@
 * ⚠️ Allergen and dietary warnings
 
 **Tech Stack:** Flutter • Node.js • Express.js • MongoDB • OCR • AI APIs • Barcode Scanner
+
+
+# This Project is under process
