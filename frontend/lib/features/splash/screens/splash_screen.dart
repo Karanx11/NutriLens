@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return const Scaffold(
       body: Center(
         child: Text(
-          "NutriLens",
+          ", Search and Exoplore what you eat.",
           style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
         ),
       ),
