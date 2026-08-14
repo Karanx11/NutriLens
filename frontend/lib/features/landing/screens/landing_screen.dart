@@ -5,9 +5,6 @@ import '../widgets/hero_section.dart';
 import '../widgets/features_section.dart';
 import '../widgets/how_it_works.dart';
 import '../widgets/health_preview.dart';
-import '../widgets/testimonials.dart';
-import '../widgets/faq_section.dart';
-import '../widgets/footer.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -24,9 +21,6 @@ class LandingScreen extends StatelessWidget {
               FeaturesSection(),
               HowItWorks(),
               HealthPreview(),
-              TestimonialsSection(),
-              FAQSection(),
-              FooterSection(),
             ],
           ),
         ),
