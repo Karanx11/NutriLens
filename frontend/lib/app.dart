@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routes/app_routes.dart';
 
@@ -9,7 +8,7 @@ class NutriLensApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "NutriLens",
+      title: 'NutriLens',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
