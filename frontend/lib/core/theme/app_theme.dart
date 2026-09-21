@@ -1,19 +1,10 @@
-// TODO Implement this library.
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'light_theme.dart';
+import 'dark_theme.dart';
 
 class AppTheme {
-  static ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    colorSchemeSeed: AppColors.primary,
-    scaffoldBackgroundColor: AppColors.background,
-    brightness: Brightness.light,
-  );
+  const AppTheme._();
 
-  static ThemeData darkTheme = ThemeData(
-    useMaterial3: true,
-    colorSchemeSeed: AppColors.primary,
-    brightness: Brightness.dark,
-    scaffoldBackgroundColor: AppColors.darkBackground,
-  );
+  static ThemeData get lightTheme => LightTheme.theme;
+  static ThemeData get darkTheme => DarkTheme.theme;
 }

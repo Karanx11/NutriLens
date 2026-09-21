@@ -5,6 +5,8 @@ class StorageService {
 
   static const String tokenKey = 'auth_token';
   static const String userIdKey = 'user_id';
+  static const String userNameKey = 'user_name';
+  static const String userEmailKey = 'user_email';
 
   static Future<void> saveToken(String token) async {
     await _storage.write(key: tokenKey, value: token);
@@ -20,6 +22,22 @@ class StorageService {
 
   static Future<String?> getUserId() async {
     return await _storage.read(key: userIdKey);
+  }
+
+  static Future<void> saveUserName(String name) async {
+    await _storage.write(key: userNameKey, value: name);
+  }
+
+  static Future<String?> getUserName() async {
+    return await _storage.read(key: userNameKey);
+  }
+
+  static Future<void> saveUserEmail(String email) async {
+    await _storage.write(key: userEmailKey, value: email);
+  }
+
+  static Future<String?> getUserEmail() async {
+    return await _storage.read(key: userEmailKey);
   }
 
   static Future<void> clear() async {
