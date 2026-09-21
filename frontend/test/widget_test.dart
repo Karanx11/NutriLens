@@ -1,29 +1,76 @@
-// This is a basic Flutter widget test.
+// Smoke tests for NutriLens.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// These avoid the full app boot (which starts timers and touches platform
+// plugins) and instead exercise pure logic and a leaf widget, so they run
+// reliably in CI.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/app.dart';
+
+import 'package:frontend/core/models/product.dart';
+import 'package:frontend/core/widgets/score_ring.dart';
+import 'package:frontend/features/scanner/data/demo_products.dart';
+
+ProductAnalysis _withScore(int score) => ProductAnalysis(
+      id: 't',
+      name: 'Test',
+      brand: 'Brand',
+      category: 'Cat',
+      barcode: '000',
+      icon: Icons.fastfood,
+      accent: const Color(0xFF16A34A),
+      nutrition: const NutritionFacts(
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        sugar: 0,
+        fat: 0,
+        saturatedFat: 0,
+        fiber: 0,
+        sodium: 0,
+      ),
+      ingredients: const [],
+      additives: const [],
+      allergens: const [],
+      dietaryFlags: const [],
+      manufacturedOn: null,
+      expiresOn: null,
+      healthScore: score,
+      summary: '',
+      pros: const [],
+      cons: const [],
+      scannedAt: DateTime(2025),
+    );
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const NutriLensApp());
+  test('health score maps to the correct rating band', () {
+    expect(_withScore(90).rating, 'Excellent');
+    expect(_withScore(65).rating, 'Good');
+    expect(_withScore(45).rating, 'Fair');
+    expect(_withScore(25).rating, 'Poor');
+    expect(_withScore(10).rating, 'Avoid');
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('demo catalog is populated and well-formed', () {
+    expect(demoProducts.length, greaterThan(3));
+    for (final p in demoProducts) {
+      expect(p.name, isNotEmpty);
+      expect(p.healthScore, inInclusiveRange(0, 100));
+      expect(p.ingredients, isNotEmpty);
+    }
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('ScoreRing renders its animated value', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: ScoreRing(score: 88, color: Color(0xFF16A34A)),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('88'), findsOneWidget);
   });
 }
