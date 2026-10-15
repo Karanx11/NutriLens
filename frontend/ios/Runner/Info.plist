@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>NutriLens uses the camera to scan product barcodes and labels.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>NutriLens reads barcodes from photos you choose.</string>
 </dict>
 </plist>

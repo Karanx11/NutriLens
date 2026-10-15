@@ -1,17 +1,13 @@
-# frontend
+# NutriLens — Flutter app
 
-A new Flutter project.
+This folder is the Flutter frontend of NutriLens. The full project README — status, what is real vs. simulated, setup, Android build notes, project structure and the backend contract — lives one level up in [`../README.md`](../README.md).
 
-## Getting Started
+Quick start:
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run
+flutter test
+```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The app runs in demo mode by default (`useMockData = true` in `lib/core/constants/api_constants.dart`): no backend, camera or API keys are needed.

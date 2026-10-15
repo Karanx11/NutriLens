@@ -96,10 +96,30 @@ class ProductAnalysis {
   final DateTime? manufacturedOn;
   final DateTime? expiresOn;
   final int healthScore; // 0 - 100
-  final String summary; // AI-generated analysis paragraph
+  final String summary; // analysis paragraph
   final List<String> pros;
   final List<String> cons;
   final DateTime scannedAt;
+
+  /// Product photo, when the data source provides one.
+  final String? imageUrl;
+
+  /// Where the data came from (e.g. "Open Food Facts"); null for demo data.
+  final String? dataSource;
+
+  /// Nutri-Score grade a–e when known.
+  final String? nutriscoreGrade;
+
+  /// NOVA processing group 1–4 when known.
+  final int? novaGroup;
+
+  /// Nutrient keys absent from the source record ("calories", "fiber", ...).
+  /// The UI shows these as "—" instead of a misleading zero.
+  final Set<String> missingNutrients;
+
+  /// How the nutrition values are stated, e.g. "per 100 g" or
+  /// "per 100 g as prepared"; null for demo data.
+  final String? nutritionBasis;
 
   const ProductAnalysis({
     required this.id,
@@ -121,6 +141,12 @@ class ProductAnalysis {
     required this.pros,
     required this.cons,
     required this.scannedAt,
+    this.imageUrl,
+    this.dataSource,
+    this.nutriscoreGrade,
+    this.novaGroup,
+    this.missingNutrients = const {},
+    this.nutritionBasis,
   });
 
   String get rating => ScoreUtils.rating(healthScore);
@@ -156,6 +182,12 @@ class ProductAnalysis {
         pros: pros,
         cons: cons,
         scannedAt: scannedAt ?? this.scannedAt,
+        imageUrl: imageUrl,
+        dataSource: dataSource,
+        nutriscoreGrade: nutriscoreGrade,
+        novaGroup: novaGroup,
+        missingNutrients: missingNutrients,
+        nutritionBasis: nutritionBasis,
       );
 
   /// Best-effort parsing for when a real backend is wired up. Icon/accent are
@@ -185,5 +217,15 @@ class ProductAnalysis {
         pros: List<String>.from(json['pros'] ?? const []),
         cons: List<String>.from(json['cons'] ?? const []),
         scannedAt: DateTime.now(),
+        imageUrl: json['imageUrl'] as String?,
+        dataSource: json['dataSource'] as String?,
+        nutriscoreGrade: json['nutriscoreGrade'] as String?,
+        novaGroup: json['novaGroup'] is num
+            ? (json['novaGroup'] as num).toInt()
+            : null,
+        missingNutrients: json['missingNutrients'] is List
+            ? Set<String>.from(json['missingNutrients'] as List)
+            : const {},
+        nutritionBasis: json['nutritionBasis'] as String?,
       );
 }

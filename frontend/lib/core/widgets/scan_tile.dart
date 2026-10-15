@@ -27,7 +27,15 @@ class ScanTile extends StatelessWidget {
               color: product.accent.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(product.icon, color: product.accent),
+            clipBehavior: Clip.antiAlias,
+            child: product.imageUrl != null
+                ? Image.network(
+                    product.imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) =>
+                        Icon(product.icon, color: product.accent),
+                  )
+                : Icon(product.icon, color: product.accent),
           ),
           const SizedBox(width: AppSizes.m),
           Expanded(

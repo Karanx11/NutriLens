@@ -40,6 +40,25 @@ class ScanProvider extends ChangeNotifier {
     ]);
   }
 
+  /// Looks a scanned barcode up for real. Returns null when the product is
+  /// unknown; rethrows network errors so the UI can explain them.
+  Future<ProductAnalysis?> lookupBarcode(String barcode) async {
+    _isAnalyzing = true;
+    notifyListeners();
+    try {
+      final result = await _service.lookupBarcode(barcode);
+      if (result != null) {
+        _current = result;
+        _history.insert(0, result);
+      }
+      return result;
+    } finally {
+      _isAnalyzing = false;
+      notifyListeners();
+    }
+  }
+
+  /// Legacy demo/backend analysis without a scanned barcode.
   Future<ProductAnalysis> analyze({String? barcode}) async {
     _isAnalyzing = true;
     notifyListeners();

@@ -58,7 +58,7 @@ class ReportScreen extends StatelessWidget {
                 const SizedBox(height: AppSizes.l),
                 _ScoreCard(product: product),
                 const SizedBox(height: AppSizes.l),
-                _SectionTitle('AI analysis'),
+                _SectionTitle('Analysis'),
                 CustomCard(
                   child: Text(
                     product.summary,
@@ -69,7 +69,7 @@ class ReportScreen extends StatelessWidget {
                 _ProsCons(product: product),
                 const SizedBox(height: AppSizes.l),
                 _SectionTitle('Nutrition (per 100g)'),
-                _NutritionCard(nutrition: product.nutrition),
+                _NutritionCard(product: product),
                 const SizedBox(height: AppSizes.l),
                 _SectionTitle('Additives (${product.additives.length})'),
                 _AdditivesCard(additives: product.additives),
@@ -80,8 +80,24 @@ class ReportScreen extends StatelessWidget {
                 _SectionTitle('Ingredients'),
                 _IngredientsCard(ingredients: product.ingredients),
                 const SizedBox(height: AppSizes.l),
-                _SectionTitle('Freshness (OCR)'),
+                _SectionTitle('Freshness'),
                 _DatesCard(product: product),
+                if (product.dataSource != null) ...[
+                  const SizedBox(height: AppSizes.m),
+                  Text(
+                    'Product data: ${product.dataSource}. Score and summary '
+                    'computed by NutriLens from Nutri-Score, nutrients per '
+                    '100g and listed additives — guidance, not medical advice.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.55),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: AppSizes.xl),
                 Row(
                   children: [
@@ -145,7 +161,15 @@ class _Header extends StatelessWidget {
             color: product.accent.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(product.icon, color: product.accent, size: 32),
+          clipBehavior: Clip.antiAlias,
+          child: product.imageUrl != null
+              ? Image.network(
+                  product.imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      Icon(product.icon, color: product.accent, size: 32),
+                )
+              : Icon(product.icon, color: product.accent, size: 32),
         ),
         const SizedBox(width: AppSizes.m),
         Expanded(
@@ -345,11 +369,26 @@ class _ProsConsCard extends StatelessWidget {
 }
 
 class _NutritionCard extends StatelessWidget {
-  final NutritionFacts nutrition;
-  const _NutritionCard({required this.nutrition});
+  final ProductAnalysis product;
+  const _NutritionCard({required this.product});
 
   @override
   Widget build(BuildContext context) {
+    final nutrition = product.nutrition;
+    final missing = product.missingNutrients;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    String whole(String key, double v) =>
+        missing.contains(key) ? '—' : '${v.round()}';
+    String one(String key, double v) =>
+        missing.contains(key) ? '—' : v.toStringAsFixed(1);
+
+    final notes = <String>[
+      if (product.nutritionBasis != null) 'Values ${product.nutritionBasis}',
+      if (missing.isNotEmpty)
+        'values missing from the source record are shown as —',
+    ];
+
     return CustomCard(
       child: Column(
         children: [
@@ -358,21 +397,21 @@ class _NutritionCard extends StatelessWidget {
               Expanded(
                 child: _NutrientTile(
                   label: 'Calories',
-                  value: '${nutrition.calories.round()}',
+                  value: whole('calories', nutrition.calories),
                   unit: 'kcal',
                 ),
               ),
               Expanded(
                 child: _NutrientTile(
                   label: 'Protein',
-                  value: nutrition.protein.toStringAsFixed(1),
+                  value: one('protein', nutrition.protein),
                   unit: 'g',
                 ),
               ),
               Expanded(
                 child: _NutrientTile(
                   label: 'Carbs',
-                  value: nutrition.carbs.toStringAsFixed(1),
+                  value: one('carbs', nutrition.carbs),
                   unit: 'g',
                 ),
               ),
@@ -384,24 +423,28 @@ class _NutritionCard extends StatelessWidget {
             value: nutrition.sugar,
             unit: 'g',
             reference: 27,
+            missing: missing.contains('sugar'),
           ),
           _MacroBar(
             label: 'Fat',
             value: nutrition.fat,
             unit: 'g',
             reference: 40,
+            missing: missing.contains('fat'),
           ),
           _MacroBar(
             label: 'Saturated fat',
             value: nutrition.saturatedFat,
             unit: 'g',
             reference: 20,
+            missing: missing.contains('saturatedFat'),
           ),
           _MacroBar(
             label: 'Sodium',
             value: nutrition.sodium,
             unit: 'mg',
             reference: 600,
+            missing: missing.contains('sodium'),
           ),
           _MacroBar(
             label: 'Fiber',
@@ -409,7 +452,20 @@ class _NutritionCard extends StatelessWidget {
             unit: 'g',
             reference: 10,
             higherIsBetter: true,
+            missing: missing.contains('fiber'),
           ),
+          if (notes.isNotEmpty)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                notes.join(' · '),
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.4,
+                  color: onSurface.withValues(alpha: 0.55),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -467,6 +523,7 @@ class _MacroBar extends StatelessWidget {
   final String unit;
   final double reference;
   final bool higherIsBetter;
+  final bool missing;
 
   const _MacroBar({
     required this.label,
@@ -474,15 +531,18 @@ class _MacroBar extends StatelessWidget {
     required this.unit,
     required this.reference,
     this.higherIsBetter = false,
+    this.missing = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final onSurface = Theme.of(context).colorScheme.onSurface;
-    final fraction = (value / reference).clamp(0.0, 1.0);
+    final fraction = missing ? 0.0 : (value / reference).clamp(0.0, 1.0);
 
     Color barColor;
-    if (higherIsBetter) {
+    if (missing) {
+      barColor = onSurface.withValues(alpha: 0.2);
+    } else if (higherIsBetter) {
       barColor = fraction >= 0.5 ? AppColors.success : AppColors.warning;
     } else if (fraction < 0.4) {
       barColor = AppColors.success;
@@ -491,6 +551,10 @@ class _MacroBar extends StatelessWidget {
     } else {
       barColor = AppColors.error;
     }
+
+    final shown = missing
+        ? '—'
+        : '${value % 1 == 0 ? value.round() : value.toStringAsFixed(1)} $unit';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.m),
@@ -505,7 +569,7 @@ class _MacroBar extends StatelessWidget {
                       fontSize: 13.5,
                       color: onSurface.withValues(alpha: 0.8))),
               Text(
-                '${value % 1 == 0 ? value.round() : value.toStringAsFixed(1)} $unit',
+                shown,
                 style: const TextStyle(
                     fontSize: 13.5, fontWeight: FontWeight.w700),
               ),
@@ -675,6 +739,14 @@ class _IngredientsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onSurface = Theme.of(context).colorScheme.onSurface;
+    if (ingredients.isEmpty) {
+      return CustomCard(
+        child: Text(
+          'No ingredient list in the source record.',
+          style: TextStyle(color: onSurface.withValues(alpha: 0.7)),
+        ),
+      );
+    }
     return CustomCard(
       child: Wrap(
         spacing: AppSizes.s,
@@ -705,6 +777,37 @@ class _DatesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (product.manufacturedOn == null && product.expiresOn == null) {
+      // Barcode databases do not carry dates; they only come from the pack.
+      return CustomCard(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline,
+                size: 20,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6)),
+            const SizedBox(width: AppSizes.s),
+            Expanded(
+              child: Text(
+                'Manufacturing and expiry dates are not part of barcode data. '
+                'Reading them from the label (OCR) is a planned feature.',
+                style: TextStyle(
+                  height: 1.4,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final expired = product.isExpired;
     final days = product.daysToExpiry;
 

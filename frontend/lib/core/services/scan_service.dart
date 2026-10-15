@@ -4,16 +4,23 @@ import '../constants/api_constants.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
 import '../../features/scanner/data/demo_products.dart';
+import 'open_food_facts_service.dart';
 
-/// Turns a scan (photo capture or barcode) into a [ProductAnalysis].
+/// Turns a scan into a [ProductAnalysis].
 ///
-/// In demo mode this returns curated on-device data after a short delay to
-/// mimic network + AI latency. With [ApiConstants.useMockData] set to false it
-/// posts to the backend instead.
+/// Scanned barcodes are looked up for real in Open Food Facts. The demo
+/// catalog remains available for "Try a sample" and as the legacy mock path.
 class ScanService {
   final ApiService _api = ApiService();
+  final OpenFoodFactsService _openFoodFacts = OpenFoodFactsService();
   final Random _rng = Random();
 
+  /// Real lookup of a scanned barcode. Returns null when the product is not
+  /// in the database; throws on network failure.
+  Future<ProductAnalysis?> lookupBarcode(String barcode) =>
+      _openFoodFacts.lookup(barcode);
+
+  /// Legacy analysis path: demo data in mock mode, otherwise the app backend.
   Future<ProductAnalysis> analyze({String? barcode}) async {
     if (ApiConstants.useMockData) {
       await Future.delayed(const Duration(milliseconds: 1700));

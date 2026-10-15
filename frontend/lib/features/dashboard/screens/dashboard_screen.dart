@@ -429,7 +429,7 @@ class _QuickActions extends StatelessWidget {
         Expanded(
           child: _ActionTile(
             icon: Icons.photo_camera_outlined,
-            label: 'Capture\nlabel',
+            label: 'Snap a\nphoto',
             color: Color(0xFF0891B2),
             action: ScannerAction.photo,
           ),
